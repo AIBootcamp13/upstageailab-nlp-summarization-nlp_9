@@ -1,0 +1,26 @@
+name: "kobart" # 이 설정 파일의 이름
+
+# 모델 및 토크나이저 정보
+pretrained_model_name_or_path: "digit82/kobart-summarization"
+
+# 토크나이저 설정
+encoder_max_len: 512
+decoder_max_len: 100
+bos_token: "<s>"
+eos_token: "</s>"
+special_tokens:
+  - '#Person1#'
+  - '#Person2#'
+  - '#Person3#'
+  - '#PhoneNumber#'
+  - '#Address#'
+
+# 생성(추론) 관련 설정
+generate_max_length: 100
+num_beams: 4
+no_repeat_ngram_size: 2
+
+# 옵티마이저 및 스케줄러 설정
+learning_rate: 1.0e-05
+weight_decay: 0.01
+warmup_ratio: 0.1

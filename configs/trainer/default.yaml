@@ -1,0 +1,26 @@
+_target_: pytorch_lightning.Trainer
+
+accelerator: "gpu"
+devices: 1
+max_epochs: 5 # 우선 5 에포크로 테스트
+
+# 정밀도 및 속도
+precision: "16-mixed"
+
+# 콜백 설정
+callbacks:
+  # 모델 체크포인트: 가장 좋은 모델을 저장
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: "val_loss" # val_loss를 기준으로
+    mode: "min"         # 가장 낮은 모델을 저장
+    save_top_k: 1       # 딱 1개만 저장
+    dirpath: "checkpoints/"
+    filename: "{epoch}-{val_loss:.2f}"
+
+  # 조기 종료
+  early_stopping:
+    _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: "val_loss"
+    patience: 3 # 3 에포크 동안 val_loss가 개선되지 않으면 학습 중단
+    mode: "min"

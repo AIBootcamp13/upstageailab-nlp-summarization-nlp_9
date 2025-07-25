@@ -1,0 +1,2 @@
+path: ./data/raw/ # 데이터 원본 경로
+batch_size: 16 # 배치 사이즈 (GPU 메모리에 맞게 조절)

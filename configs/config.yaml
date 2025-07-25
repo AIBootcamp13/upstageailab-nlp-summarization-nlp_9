@@ -1,0 +1,18 @@
+# @package _global_
+
+# 기본값 설정
+defaults:
+  - data: default
+  - model: kobart
+  - trainer: default
+  - _self_
+
+# W&B 로거 설정
+wandb:
+  _target_: pytorch_lightning.loggers.WandbLogger
+  project: "team9-NLP" # wandb에 생성한 프로젝트 이름
+  name: ${model.name}-${now:%Y-%m-%d-%H-%M-%S} # 실행 이름 (모델명-실행시간)
+  entity: null # wandb 계정 이름 (선택)
+
+# 일반 설정
+seed: 42
