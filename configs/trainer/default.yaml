@@ -8,19 +8,19 @@ max_epochs: 5 # 우선 5 에포크로 테스트
 precision: "16-mixed"
 
 # 콜백 설정
-callbacks:
-  # 모델 체크포인트: 가장 좋은 모델을 저장
-  model_checkpoint:
-    _target_: pytorch_lightning.callbacks.ModelCheckpoint
-    monitor: "val_loss" # val_loss를 기준으로
-    mode: "min"         # 가장 낮은 모델을 저장
+callbacks: # 리스트 형태로 변경
+  - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: "rougeL" # ROUGE-L 점수를 기준으로
+    mode: "max"         # 가장 높은 모델을 저장
     save_top_k: 1       # 딱 1개만 저장
-    dirpath: "checkpoints/"
-    filename: "{epoch}-{val_loss:.2f}"
+    dirpath: "all_checkpoints/" # 모든 체크포인트를 이 폴더에 저장
+    filename: "${wandb.name}-{epoch}-{rougeL:.4f}" # 파일 이름에 wandb 실행 이름을 사용해 중복 방지
 
-  # 조기 종료
-  early_stopping:
-    _target_: pytorch_lightning.callbacks.EarlyStopping
-    monitor: "val_loss"
+  - _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: "rougeL"
     patience: 3 # 3 에포크 동안 val_loss가 개선되지 않으면 학습 중단
-    mode: "min"
+    mode: "max"
+
+  # - _target_: pytorch_lightning.callbacks.RichProgressBar
+  #   theme: pytorch_lightning.callbacks.progress.rich_progress.RichProgressBarTheme
+  #   leave: true

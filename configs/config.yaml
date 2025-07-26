@@ -10,9 +10,11 @@ defaults:
 # W&B 로거 설정
 wandb:
   _target_: pytorch_lightning.loggers.WandbLogger
-  project: "team9-NLP" # wandb에 생성한 프로젝트 이름
-  name: ${model.name}-${now:%Y-%m-%d-%H-%M-%S} # 실행 이름 (모델명-실행시간)
+  project: "team9-NLP"
+  # 실행 이름에 학습률과 배치 사이즈를 추가하여 가독성 향상
+  name: "${model.name}-lr_${model.learning_rate}-bs_${data.batch_size}"
   entity: null # wandb 계정 이름 (선택)
+  log_model: "all" # "all"로 설정하면 모든 체크포인트를 wandb에 저장
 
 # 일반 설정
 seed: 42

@@ -53,3 +53,33 @@ data/raw/
 data/processed/
 
 DS_Store
+
+# PyTorch Checkpoints
+*.ckpt
+*.pt
+*.pkl
+
+# Logs
+*.log
+
+# CSV files
+*.csv
+
+# macOS Finder
+**/.DS_Store
+
+# 대용량 모델 파일
+*.pt
+*.ckpt
+*.pkl
+
+# 데이터 파일
+*.csv
+*.tsv
+*.json
+*.zip
+
+# 로그
+*.log
+
+wandb/

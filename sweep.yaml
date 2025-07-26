@@ -1,0 +1,31 @@
+command:
+  - ${env}
+  - python
+  - -m
+  - src.train
+  - --config-path
+  - ../configs  # <--- 여기를 'configs'에서 '../configs'로 수정
+  - --config-name
+  - config.yaml
+  - ${args_no_hyphens}
+
+method: bayes
+
+metric:
+  name: val_loss
+  goal: minimize
+
+parameters:
+  model.pretrained_model_name_or_path:
+    values:
+      - "paust/pko-t5-base"
+      - "digit82/kobart-summarization"
+      - "KETI-AIR/ke-t5-base"
+
+  model.learning_rate:
+    distribution: log_uniform_values
+    min: 1.0e-05
+    max: 1.0e-04
+
+  model.num_beams:
+    values: [3, 5]

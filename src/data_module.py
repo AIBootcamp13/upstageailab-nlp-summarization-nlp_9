@@ -1,3 +1,5 @@
+# src/data_module.py
+
 import os
 import pandas as pd
 import torch
@@ -75,39 +77,58 @@ class SummaryDataModule(pl.LightningDataModule):
             self.train_dataset = SummaryDataset(tokenized_train_inputs)
             self.val_dataset = SummaryDataset(tokenized_val_inputs)
 
-    def _tokenize_data(self, encoder_input, decoder_input, decoder_output):
+        if stage == 'test' or stage == 'predict' or stage is None:
+            test_df = pd.read_csv(os.path.join(self.data_path, 'test.csv'))
+            test_encoder_input = test_df['dialogue'].tolist()
+            # 테스트 데이터는 정답(summary)이 없으므로 encoder_input만 토큰화합니다.
+            tokenized_test_inputs = self._tokenize_data(test_encoder_input)
+            self.test_dataset = SummaryDataset(tokenized_test_inputs)
+
+    def _tokenize_data(self, encoder_input, decoder_input=None, decoder_output=None):
         """토크나이저를 사용하여 데이터를 토큰화하고 텐서로 변환하는 헬퍼 함수"""
         tokenized_encoder = self.tokenizer(
             encoder_input, return_tensors="pt", padding=True, truncation=True,
             max_length=self.model_cfg.encoder_max_len
         )
 
-        tokenized_decoder = self.tokenizer(
-            decoder_input, return_tensors="pt", padding=True, truncation=True,
-            max_length=self.model_cfg.decoder_max_len
-        )
+        # 학습/검증 시에만 decoder와 label 데이터를 처리합니다.
+        if decoder_input is not None and decoder_output is not None:
+            tokenized_decoder = self.tokenizer(
+                decoder_input, return_tensors="pt", padding=True, truncation=True,
+                max_length=self.model_cfg.decoder_max_len
+            )
 
-        tokenized_labels = self.tokenizer(
-            decoder_output, return_tensors="pt", padding=True, truncation=True,
-            max_length=self.model_cfg.decoder_max_len
-        )
+            tokenized_labels = self.tokenizer(
+                decoder_output, return_tensors="pt", padding=True, truncation=True,
+                max_length=self.model_cfg.decoder_max_len
+            )
 
-        return {
-            'input_ids': tokenized_encoder.input_ids,
-            'attention_mask': tokenized_encoder.attention_mask,
-            'decoder_input_ids': tokenized_decoder.input_ids,
-            'decoder_attention_mask': tokenized_decoder.attention_mask,
-            'labels': tokenized_labels.input_ids
-        }
+            return {
+                'input_ids': tokenized_encoder.input_ids,
+                'attention_mask': tokenized_encoder.attention_mask,
+                'decoder_input_ids': tokenized_decoder.input_ids,
+                'decoder_attention_mask': tokenized_decoder.attention_mask,
+                'labels': tokenized_labels.input_ids
+            }
+        # 테스트 시에는 input_ids와 attention_mask만 반환합니다.
+        else:
+            return {
+                'input_ids': tokenized_encoder.input_ids,
+                'attention_mask': tokenized_encoder.attention_mask,
+            }
 
     def train_dataloader(self):
         """학습용 데이터로더를 반환합니다."""
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4)
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=0)
 
     def val_dataloader(self):
         """검증용 데이터로더를 반환합니다."""
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=4)
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=0)
 
-    # def test_dataloader(self):
-    #     """(나중에 구현) 테스트용 데이터로더를 반환합니다."""
-    #     pass
+    def test_dataloader(self):
+        """테스트용 데이터로더를 반환합니다."""
+        return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=0)
+
+    def predict_dataloader(self):
+        """추론용 데이터로더를 반환합니다."""
+        return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=0)
