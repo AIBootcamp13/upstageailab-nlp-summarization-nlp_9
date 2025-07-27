@@ -1,3 +1,4 @@
+# configs/config.yaml
 # @package _global_
 
 # 기본값 설정
@@ -10,10 +11,11 @@ defaults:
 # W&B 로거 설정
 wandb:
   _target_: pytorch_lightning.loggers.WandbLogger
-  project: "team9-NLP"
+  project: "nlp"
   # 실행 이름에 학습률과 배치 사이즈를 추가하여 가독성 향상
   name: "${model.name}-lr_${model.learning_rate}-bs_${data.batch_size}"
-  entity: null # wandb 계정 이름 (선택)
+  entity: null # 
+  # W&B 프로젝트는 특정 작업이나 실험을 나타내며, 엔티티는 해당 프로젝트를 소속하는 사용자나 팀을 나타냅니다.
   log_model: "all" # "all"로 설정하면 모든 체크포인트를 wandb에 저장
 
 # 일반 설정

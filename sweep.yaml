@@ -1,10 +1,12 @@
+# sweep.yaml
+
 command:
   - ${env}
   - python
   - -m
   - src.train
   - --config-path
-  - ../configs  # <--- 여기를 'configs'에서 '../configs'로 수정
+  - ../configs 
   - --config-name
   - config.yaml
   - ${args_no_hyphens}

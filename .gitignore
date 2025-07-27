@@ -83,3 +83,5 @@ DS_Store
 *.log
 
 wandb/
+
+*.md
