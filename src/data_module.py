@@ -1,3 +1,5 @@
+# src/data_module.py
+
 import os
 import re
 import pandas as pd
@@ -11,6 +13,12 @@ def clean_text(text):
     text = re.sub(r'\s+', ' ', str(text)).strip()
     return text
 
+# 클래스 설명: 요약 데이터셋
+# 이 클래스는 Hugging Face의 Dataset을 상속받아, 요약 모델 학습에 필요한 데이터셋을 정의합니다.
+# 데이터는 'input_text'와 'english_summary' 컬럼을 포함하며,
+# 이를 토큰화하여 모델이 이해할 수 있는 형태로 변환합니다.
+# 또한, T5 모델의 경우 topic_token을 접두사로 사용하여 입력을 생성합니다.
+# 이 클래스는 PyTorch의 Dataset 인터페이스를 구현하여, DataLoader와 함께 사용될 수 있습니다.
 class SummaryDataset(Dataset):
     def __init__(self, tokenized_data):
         self.tokenized_data = tokenized_data
@@ -23,63 +31,68 @@ class SummaryDataset(Dataset):
         return len(self.tokenized_data['input_ids'])
 
 class SummaryDataModule(pl.LightningDataModule):
-    def __init__(self, data_cfg, model_cfg):
+    def __init__(self, data_cfg, model_cfg, train_df=None, val_df=None):
         super().__init__()
+        self.data_cfg = data_cfg
         self.model_cfg = model_cfg
-        self.data_path = data_cfg.path
+        
+        # ▼▼▼▼▼ 바로 이 한 줄이 빠져 있었어! ▼▼▼▼▼
         self.batch_size = data_cfg.batch_size
-        self.save_hyperparameters()
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-        self.is_t5 = "t5" in self.model_cfg.pretrained_model_name_or_path.lower()
+        # 외부에서 데이터프레임을 직접 주입받을 수 있도록 함
+        self.train_df_external = train_df
+        self.val_df_external = val_df
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_cfg.pretrained_model_name_or_path
         )
-        self.tokenizer.add_special_tokens(
-            {'additional_special_tokens': list(self.model_cfg.special_tokens)}
-        )
+        
+        # data_cfg에 topic 정보가 있으면 special token으로 추가
+        if self.data_cfg.get("topics"):
+            special_tokens_to_add = list(self.data_cfg.topics)
+            self.tokenizer.add_special_tokens(
+                {'additional_special_tokens': special_tokens_to_add}
+            )
 
     def setup(self, stage: str = None):
         if stage == 'fit' or stage is None:
-            train_df = pd.read_csv(os.path.join(self.data_path, 'train.csv'))
-            val_df = pd.read_csv(os.path.join(self.data_path, 'dev.csv'))
+            if self.train_df_external is not None:
+                train_df = self.train_df_external
+                val_df = self.val_df_external
+            else:
+                train_df = pd.read_csv(self.data_cfg.train_path)
+                val_df = pd.read_csv(self.data_cfg.val_path)
+
+            is_t5 = "t5" in self.model_cfg.pretrained_model_name_or_path.lower()
             
-            # 텍스트 클리닝
-            train_df['dialogue'] = train_df['dialogue'].apply(clean_text)
-            train_df['summary'] = train_df['summary'].apply(clean_text)
-            val_df['dialogue'] = val_df['dialogue'].apply(clean_text)
-            val_df['summary'] = val_df['summary'].apply(clean_text)
-
-            if self.is_t5:
-                train_encoder_input = ["summarize: " + dialogue for dialogue in train_df['dialogue']]
-                val_encoder_input = ["summarize: " + dialogue for dialogue in val_df['dialogue']]
-                train_decoder_input = train_df['summary'].astype(str).tolist()
-                val_decoder_input = val_df['summary'].astype(str).tolist()
+            # ▼▼▼▼▼ 핵심 수정 부분 ▼▼▼▼▼
+            # 설정 파일의 use_topic_prefix 값 (기본값 True)에 따라 분기 처리
+            if is_t5 and self.data_cfg.get("use_topic_prefix", True):
+                print("--- [DataModule] Topic 힌트를 사용하여 입력을 구성합니다. ---")
+                train_df['input_text'] = train_df['topic_token'] + ' ' + train_df['english_dialogue']
+                val_df['input_text'] = val_df['topic_token'] + ' ' + val_df['english_dialogue']
             else:
-                train_encoder_input = train_df['dialogue'].tolist()
-                val_encoder_input = val_df['dialogue'].tolist()
-                train_decoder_input = [self.model_cfg.bos_token + str(s) for s in train_df['summary']]
-                val_decoder_input = [self.model_cfg.bos_token + str(s) for s in val_df['summary']]
+                print("--- [DataModule] Topic 힌트 없이 입력을 구성합니다. ---")
+                train_df['input_text'] = train_df['english_dialogue']
+                val_df['input_text'] = val_df['english_dialogue']
+            # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-            train_decoder_output = [str(s) + self.model_cfg.eos_token for s in train_df['summary']]
-            val_decoder_output = [str(s) + self.model_cfg.eos_token for s in val_df['summary']]
-
-            tokenized_train_inputs = self._tokenize_data(train_encoder_input, train_decoder_input, train_decoder_output)
-            tokenized_val_inputs = self._tokenize_data(val_encoder_input, val_decoder_input, val_decoder_output)
-
-            self.train_dataset = SummaryDataset(tokenized_train_inputs)
-            self.val_dataset = SummaryDataset(tokenized_val_inputs)
-
-        if stage == 'test' or stage == 'predict' or stage is None:
-            test_df = pd.read_csv(os.path.join(self.data_path, 'test.csv'))
-            test_df['dialogue'] = test_df['dialogue'].apply(clean_text)
-            if self.is_t5:
-                test_encoder_input = ["summarize: " + dialogue for dialogue in test_df['dialogue']]
-            else:
-                test_encoder_input = test_df['dialogue'].tolist()
-            tokenized_test_inputs = self._tokenize_data(test_encoder_input)
-            self.test_dataset = SummaryDataset(tokenized_test_inputs)
-
+            tokenized_train = self.tokenizer(
+                train_df['input_text'].tolist(),
+                text_target=train_df['english_summary'].tolist(),
+                padding=True, truncation=True, return_tensors="pt",
+                max_length=self.model_cfg.encoder_max_len
+            )
+            tokenized_val = self.tokenizer(
+                val_df['input_text'].tolist(),
+                text_target=val_df['english_summary'].tolist(),
+                padding=True, truncation=True, return_tensors="pt",
+                max_length=self.model_cfg.encoder_max_len
+            )
+            
+            self.train_dataset = SummaryDataset(tokenized_train)
+            self.val_dataset = SummaryDataset(tokenized_val)
     def _tokenize_data(self, encoder_input, decoder_input=None, decoder_output=None):
         tokenized_encoder = self.tokenizer(encoder_input, return_tensors="pt", padding=True, truncation=True, max_length=self.model_cfg.encoder_max_len)
         if decoder_input is not None and decoder_output is not None:

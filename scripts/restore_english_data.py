@@ -5,14 +5,6 @@ from tqdm import tqdm  # 진행 상황을 보여주는 라이브러리 (pip inst
 import time
 
 # --- 1. 기본 설정 ---
-
-# Solar API 키 및 클라이언트 설정
-# (터미널에서 'export UPSTAGE_API_KEY="your_key"'를 실행해야 함)
-# UPSTAGE_API_KEY = os.getenv("UPSTAGE_API_KEY")
-# if not UPSTAGE_API_KEY:
-#     raise ValueError("UPSTAGE_API_KEY 환경 변수를 설정해주세요.")
-
-
 # 관련 라이브러리 설치: pip install python-dotenv
 from dotenv import load_dotenv
 import os
@@ -22,17 +14,17 @@ load_dotenv()
 
 # 환경 변수에서 API 키를 불러옵니다.
 UPSTAGE_API_KEY = os.getenv("UPSTAGE_API_KEY")
-
 if not UPSTAGE_API_KEY:
     raise ValueError("'.env' 파일에 UPSTAGE_API_KEY가 설정되어 있지 않습니다.")
 
-
+# OpenAI 클라이언트 초기화
+# base_url은 Upstage의 Solar API 엔드포인트로 설정합니다.
 client = OpenAI(
     api_key=UPSTAGE_API_KEY,
     base_url="https://api.upstage.ai/v1/solar"
 )
 
-# 우리가 최종 선택한 '우승 프롬프트 B'
+# 우리가 최종 선택한 '프롬프트 B'
 PROMPT = """You are an expert in paraphrasing and cross-lingual adaptation. Your job is to take a Korean dialogue and rewrite it into English in a **semantically faithful but stylistically enriched** way. Your English output should retain all the **intentions, emotions, and facts**, but be phrased differently — more naturally, as a native speaker would say it in real life.
 
 Do not translate word-for-word. Instead, reimagine the English dialogue with:

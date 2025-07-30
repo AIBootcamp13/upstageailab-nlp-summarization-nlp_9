@@ -1,0 +1,17 @@
+# # 최종적으로 분할된 영어 데이터셋 경로
+# train_path: ../data/processed/train.csv
+# val_path: ../data/processed/val.csv
+
+# batch_size: 16
+
+# # 이 값을 바꿔가며 A/B 테스트를 진행할 거야
+# use_topic_prefix: True
+
+# configs/data/english_v1.yaml (수정본)
+# 프로젝트 루트 기준의 명확한 경로로 수정
+train_path: data/processed/train.csv
+val_path: data/processed/val.csv
+
+batch_size: 8 # <-- 메모리 부족(OOM) 에러 방지를 위해 8로 유지!
+
+use_topic_prefix: True
