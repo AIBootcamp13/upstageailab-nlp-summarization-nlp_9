@@ -84,5 +84,6 @@ DS_Store
 
 wandb/
 
-*.mdRULES.md
+*.md
 .env
+RULES.md
