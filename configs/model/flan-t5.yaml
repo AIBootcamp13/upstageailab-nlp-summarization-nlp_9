@@ -21,9 +21,22 @@ special_tokens:
   - '#PhoneNumber#'
   - '#Address#'
   
+# generate_max_length: 128
+# num_beams: 4
+# no_repeat_ngram_size: 2
+# learning_rate: 1.0e-05
+# weight_decay: 0.01
+# warmup_ratio: 0.1
+
+
+# 생성(추론) 관련 설정
 generate_max_length: 128
 num_beams: 4
 no_repeat_ngram_size: 2
-learning_rate: 1.0e-05
+
+# 옵티마이저 및 스케줄러 설정 (최종 레시피)
+learning_rate: 1.0e-4   # 표준적인 값으로 수정
 weight_decay: 0.01
 warmup_ratio: 0.1
+label_smoothing: 0.1  # 라벨 스무딩 추가
+lr_scheduler: "cosine_with_restarts" # 스케줄러 종류 명시

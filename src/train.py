@@ -5,13 +5,13 @@ import pytorch_lightning as pl
 import torch
 from omegaconf import DictConfig, OmegaConf
 
-from src.data_module import SummaryDataModule
-from src.model_module import SummaryModelModule
+# from src.data_module import SummaryDataModule
+# from src.model_module import SummaryModelModule
+from .data_module import SummaryDataModule
+from .model_module import SummaryModelModule
 
-
-# @hydra.main(config_path="../configs", config_name="config.yaml", version_base=None)
-# def train(cfg: DictConfig) -> None:
-@hydra.main(version_base=None, config_path=None, config_name=None)
+# 하이드라가 실행 시마다 작업 디렉토리를 변경하기 때문에, 경로를 고정시켜주는 것이 안정적이다.
+@hydra.main(config_path="../configs", config_name="config.yaml", version_base=None)
 def train(cfg: DictConfig) -> None:
     """
     Hydra와 PyTorch Lightning을 사용하여 모델 학습을 수행하는 메인 함수.

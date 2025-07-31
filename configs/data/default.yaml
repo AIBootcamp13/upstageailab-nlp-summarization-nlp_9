@@ -1,2 +1,15 @@
-path: ./data/raw/ # 데이터 원본 경로
-batch_size: 16 # 배치 사이즈 (GPU 메모리에 맞게 조절)
+# path: ./data/raw/ # 데이터 원본 경로
+# batch_size: 16 # 배치 사이즈 (GPU 메모리에 맞게 조절)
+
+
+# configs/data/default.yaml
+
+# 훈련 및 검증 데이터 파일의 경로
+train_path: "./data/processed/train.csv"
+val_path: "./data/processed/val.csv"
+
+# 훈련 시 사용할 배치 사이즈
+batch_size: 16
+
+# 데이터 로딩에 사용할 CPU 워커 수
+num_workers: 4

@@ -6,6 +6,7 @@ import time
 from sklearn.model_selection import train_test_split
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import re # 텍스트 클리닝을 위한 re 라이브러리 임포트
 
 # --- 1. 기본 설정 ---
 
@@ -19,7 +20,7 @@ client = OpenAI(
     base_url="https://api.upstage.ai/v1/solar"
 )
 
-NUM_WORKERS = 7
+NUM_WORKERS = 6
 
 PROMPT_DIALOGUE = """You are an expert in paraphrasing and cross-lingual adaptation. 
 Your job is to take a Korean dialogue and rewrite it into English in a **semantically faithful but stylistically enriched** way. 
@@ -31,19 +32,28 @@ PROMPT_SUMMARY = "Translate the Korean dialogue into a natural but informative E
 "The result should be clear and objective, as if written by a human annotator."
 
 # ▼▼▼▼▼ Topic 번역을 위한 '우승 프롬프트 A'로 수정 ▼▼▼▼▼
-PROMPT_TOPIC = """You are a professional English scriptwriter. You are rewriting a Korean conversational script into fluent and natural English. 
-Please preserve the tone, style, and emotional nuance of each speaker. 
-You may slightly rephrase where needed to sound idiomatic and coherent. 
-DO NOT translate literally 
-— your goal is to make the dialogue sound like native-level English, as if it were written for a film or drama script.
+# PROMPT_TOPIC = """You are a professional English scriptwriter. You are rewriting a Korean conversational script into fluent and natural English. 
+# Please preserve the tone, style, and emotional nuance of each speaker. 
+# You may slightly rephrase where needed to sound idiomatic and coherent. 
+# DO NOT translate literally 
+# — your goal is to make the dialogue sound like native-level English, as if it were written for a film or drama script.
 
-[Input]: A Korean multi-turn conversation.
-[Output]: The equivalent fluent, natural English dialogue.
+# [Input]: A Korean multi-turn conversation.
+# [Output]: The equivalent fluent, natural English dialogue.
 
-Note:
-- Maintain speaker turns (#Person1#, #Person2#).
-- Include common expressions, tone shifts, and pauses naturally.
-- Keep cultural relevance intact, but adapt idioms when necessary."""
+# Note:
+# - Maintain speaker turns (#Person1#, #Person2#).
+# - Include common expressions, tone shifts, and pauses naturally.
+# - Keep cultural relevance intact, but adapt idioms when necessary."""
+PROMPT_TOPIC = """You are an expert translator specializing in creating concise topic titles for datasets.
+Translate the following Korean topic title into a clear, objective, and informative English title.
+The style should be neutral, as if written by a human annotator.
+
+- DO NOT add any extra explanation or surrounding text.
+- The output must ONLY be the translated English title.
+
+Korean Topic to Translate:
+"""
 # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 INPUT_FILE = './data/raw/train.csv'
@@ -51,25 +61,33 @@ CHECKPOINT_FILE = './data/processed/translation_checkpoint.csv'
 FINAL_TRAIN_FILE = './data/processed/train.csv'
 FINAL_VAL_FILE = './data/processed/val.csv'
 
-# --- 2. 핵심 기능 함수 ---
-# def translate(text, prompt):
-#     if pd.isnull(text):
-#         return ""
-#     try:
-#         response = client.chat.completions.create(
-#             # model="solar-1-mini-chat",
-#             model="solar-pro2", # 최신 모델로 변경
-#             messages=[{"role": "user", "content": f"{prompt}\n\n---\n\n{text}"}],
-#             stream=False,
-#             temperature=0.1
-#         )
-#         return response.choices[0].message.content
-#     except Exception as e:
-#         print(f"--- API Error during translation of '{str(text)[:20]}...': {e} ---")
-#         return "TRANSLATION_FAILED"
+# 텍스트 클리닝 함수 추가 
+def clean_korean_text(text):
+    """
+    API에 넣기 전, 한국어 텍스트를 깨끗하게 만드는 함수
+    - 줄바꿈 정리, 공백 정리, 문장부호 정리 등 포함
+    """
+    if pd.isnull(text):
+        return ""
 
+    text = str(text)
 
-# create_final_dataset.py 파일의 translate 함수를 아래 코드로 교체
+    # 1. 줄바꿈을 공백으로 변환
+    text = text.replace('\n', ' ')
+
+    # 2. 연속된 마침표(...) 이상은 ... 하나로 통일
+    text = re.sub(r'\.{4,}', '...', text)
+
+    # 3. 중복 공백 제거 (탭, 여러 칸 등)
+    text = re.sub(r'\s+', ' ', text)
+
+    # 4. 중복 느낌표나 물음표 정리 (원한다면)
+    text = re.sub(r'([!?]){2,}', r'\1', text)
+
+    # 5. 앞뒤 공백 제거
+    text = text.strip()
+
+    return text
 
 def translate(text, prompt):
     """

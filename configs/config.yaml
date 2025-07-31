@@ -20,3 +20,14 @@ wandb:
 
 # 일반 설정
 seed: 42
+
+
+# 추론(Inference) 시 덮어쓸 생성(Generation) 관련 옵션
+# 기본값은 null로 두어, 커맨드 라인에서 값을 주지 않으면 원래 모델 설정을 따르도록 함
+generation:
+  num_beams: null
+  length_penalty: null
+  repetition_penalty: null
+  do_sample: null
+  top_k: null
+  top_p: null
