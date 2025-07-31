@@ -19,7 +19,7 @@ client = OpenAI(
     base_url="https://api.upstage.ai/v1/solar"
 )
 
-NUM_WORKERS = 5
+NUM_WORKERS = 7
 
 PROMPT_DIALOGUE = """You are an expert in paraphrasing and cross-lingual adaptation. 
 Your job is to take a Korean dialogue and rewrite it into English in a **semantically faithful but stylistically enriched** way. 
@@ -52,22 +52,59 @@ FINAL_TRAIN_FILE = './data/processed/train.csv'
 FINAL_VAL_FILE = './data/processed/val.csv'
 
 # --- 2. 핵심 기능 함수 ---
-def translate(text, prompt):
-    if pd.isnull(text):
-        return ""
-    try:
-        response = client.chat.completions.create(
-            # model="solar-1-mini-chat",
-            model="solar-pro2", # 최신 모델로 변경
-            messages=[{"role": "user", "content": f"{prompt}\n\n---\n\n{text}"}],
-            stream=False,
-            temperature=0.1
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        print(f"--- API Error during translation of '{str(text)[:20]}...': {e} ---")
-        return "TRANSLATION_FAILED"
+# def translate(text, prompt):
+#     if pd.isnull(text):
+#         return ""
+#     try:
+#         response = client.chat.completions.create(
+#             # model="solar-1-mini-chat",
+#             model="solar-pro2", # 최신 모델로 변경
+#             messages=[{"role": "user", "content": f"{prompt}\n\n---\n\n{text}"}],
+#             stream=False,
+#             temperature=0.1
+#         )
+#         return response.choices[0].message.content
+#     except Exception as e:
+#         print(f"--- API Error during translation of '{str(text)[:20]}...': {e} ---")
+#         return "TRANSLATION_FAILED"
 
+
+# create_final_dataset.py 파일의 translate 함수를 아래 코드로 교체
+
+def translate(text, prompt):
+    """
+    Solar API를 호출하여 텍스트를 번역하는 범용 함수
+    (Rate Limit 에러 발생 시, 자동으로 재시도하는 기능 추가)
+    """
+    if pd.isnull(text): return ""
+    
+    # 총 5번까지 재시도
+    max_retries = 5
+    # 처음엔 5초 기다리고, 실패할 때마다 2배씩 대기 시간 증가
+    delay = 5 
+
+    for i in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model="solar-1-mini-chat",
+                messages=[{"role": "user", "content": f"{prompt}\n\n---\n\n{text}"}],
+                stream=False, temperature=0.1
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            # 429 Rate Limit 에러인 경우에만 재시도
+            if '429' in str(e) or 'too_many_requests' in str(e):
+                print(f"--- Rate limit hit. Retrying in {delay} seconds... ({i+1}/{max_retries}) ---")
+                time.sleep(delay)
+                delay *= 2 # 대기 시간 2배 증가 (Exponential Backoff)
+            else:
+                # 다른 종류의 에러이면, 재시도 없이 실패 처리
+                print(f"--- API Error: {e} ---")
+                return "TRANSLATION_FAILED"
+    
+    # 모든 재시도 실패 시
+    print(f"--- Translation failed for '{str(text)[:20]}...' after {max_retries} retries. ---")
+    return "TRANSLATION_FAILED"
 
 # --- 3. 메인 실행 로직 (병렬 처리 방식으로 변경) ---
 def main():
@@ -117,6 +154,7 @@ def main():
             
             # 50개마다 중간 저장 (이제 훨씬 더 빨라짐)
             if (original_index + 1) % 50 == 0:
+                print(f"\n... {original_index + 1}개 작업 완료. 체크포인트를 저장합니다 ...")
                 df.to_csv(CHECKPOINT_FILE, index=False, encoding='utf-8-sig')
 
     print("\n✅ 모든 번역 작업을 완료했습니다.")
