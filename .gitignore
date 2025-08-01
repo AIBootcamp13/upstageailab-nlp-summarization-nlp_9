@@ -32,7 +32,7 @@ MANIFEST
 *.spec
 
 # Jupyter Notebook
-*.ipynb
+# *.ipynb
 
 # Environments
 .env

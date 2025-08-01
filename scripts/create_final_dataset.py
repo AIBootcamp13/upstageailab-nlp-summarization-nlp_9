@@ -31,20 +31,6 @@ Keep speaker markers (#Person1#, #Person2#) in the output."""
 PROMPT_SUMMARY = "Translate the Korean dialogue into a natural but informative English style, maintaining key details and avoiding casual expressions. " 
 "The result should be clear and objective, as if written by a human annotator."
 
-# ▼▼▼▼▼ Topic 번역을 위한 '우승 프롬프트 A'로 수정 ▼▼▼▼▼
-# PROMPT_TOPIC = """You are a professional English scriptwriter. You are rewriting a Korean conversational script into fluent and natural English. 
-# Please preserve the tone, style, and emotional nuance of each speaker. 
-# You may slightly rephrase where needed to sound idiomatic and coherent. 
-# DO NOT translate literally 
-# — your goal is to make the dialogue sound like native-level English, as if it were written for a film or drama script.
-
-# [Input]: A Korean multi-turn conversation.
-# [Output]: The equivalent fluent, natural English dialogue.
-
-# Note:
-# - Maintain speaker turns (#Person1#, #Person2#).
-# - Include common expressions, tone shifts, and pauses naturally.
-# - Keep cultural relevance intact, but adapt idioms when necessary."""
 PROMPT_TOPIC = """You are an expert translator specializing in creating concise topic titles for datasets.
 Translate the following Korean topic title into a clear, objective, and informative English title.
 The style should be neutral, as if written by a human annotator.

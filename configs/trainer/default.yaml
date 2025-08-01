@@ -1,48 +1,25 @@
-# # configs/trainer/default.yaml
-# _target_: pytorch_lightning.Trainer
-
-# accelerator: "gpu"
-# devices: 1
-# max_epochs: 10 # 우선 10 에포크로 테스트
-
-# # 정밀도 및 속도
-# precision: 32
-
-# # 콜백 설정
-# callbacks: # 리스트 형태로 변경
-#   # - _target_: pytorch_lightning.callbacks.ModelCheckpoint
-#   - _target_: pytorch_lightning.callbacks.EarlyStopping
-#     monitor: "rougeL" # ROUGE-L 점수를 기준으로
-#     mode: "max"         # 가장 높은 모델을 저장
-#     save_top_k: 1       # 딱 1개만 저장
-#     dirpath: "all_checkpoints/" # 모든 체크포인트를 이 폴더에 저장
-#     filename: "${wandb.name}-{epoch}-{rougeL:.4f}" # 파일 이름에 wandb 실행 이름을 사용해 중복 방지
-
-#   - _target_: pytorch_lightning.callbacks.EarlyStopping
-#     monitor: "rougeL"
-#     patience: 3 # 3 에포크 동안 val_loss가 개선되지 않으면 학습 중단
-#     mode: "max"
-
-
+# configs/trainer/default.yaml
 _target_: pytorch_lightning.Trainer
 
-accelerator: "gpu"
+accelerator: "auto"
 devices: 1
-max_epochs: 10
-precision: 32
+max_epochs: 20
+log_every_n_steps: 50
+# precision: "bf16-mixed"    
+precision: "16-mixed"
+gradient_clip_val: 1.0
+accumulate_grad_batches: 2  # ✅ batch size 늘린 효과 (GPU 메모리 아끼면서 효과는 배로)
 
-# 콜백 설정
 callbacks:
-  # 첫 번째 리스트 항목 (-)
   - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    dirpath: "all_checkpoints/${model.name}"
+    filename: "model-{epoch}-{rougeL:.4f}" # "epoch={epoch}-rougeL={rougeL:.4f}" -> "model-{epoch}-{rougeL:.4f}"
     monitor: "rougeL"
     mode: "max"
     save_top_k: 1
-    dirpath: "all_checkpoints/"
-    filename: "flan-t5-{epoch}-{rougeL:.4f}"
+    save_last: true
 
-  # 두 번째 리스트 항목 (-)
   - _target_: pytorch_lightning.callbacks.EarlyStopping
     monitor: "rougeL"
-    patience: 3
     mode: "max"
+    patience: 5

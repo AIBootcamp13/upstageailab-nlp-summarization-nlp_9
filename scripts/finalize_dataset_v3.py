@@ -1,4 +1,5 @@
 # 자연어 힌트, 계층적 샘플링, 정제된 데이터셋 생성 스크립트
+# pwd: scripts/finalize_dataset_v3.py
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -71,5 +72,6 @@ def main():
     print("\n✅ 훈련/검증 데이터셋 저장 완료!")
     print(f"  - 훈련셋 경로: {train_output_path} ({len(train_df)}개)")
     print(f"  - 검증셋 경로: {val_output_path} ({len(val_df)}개)")
+    
 if __name__ == "__main__":
     main()

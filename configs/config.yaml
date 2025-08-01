@@ -16,7 +16,7 @@ wandb:
   name: "${model.name}-lr_${model.learning_rate}-bs_${data.batch_size}"
   entity: null # 
   # W&B 프로젝트는 특정 작업이나 실험을 나타내며, 엔티티는 해당 프로젝트를 소속하는 사용자나 팀을 나타냅니다.
-  log_model: "all" # "all"로 설정하면 모든 체크포인트를 wandb에 저장
+  log_model: True # "all"로 설정하면 모든 체크포인트를 wandb에 저장하니까 완디비 용량이 넘 커서 True로 설정
 
 # 일반 설정
 seed: 42
