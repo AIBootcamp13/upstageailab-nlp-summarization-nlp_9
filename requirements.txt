@@ -30,3 +30,5 @@ rouge-score==0.1.2
 omegaconf>=2.3.0 
 openai
 python-dotenv
+
+sentencepiece

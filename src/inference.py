@@ -5,7 +5,8 @@ import sys
 import re
 import glob
 import argparse
-from datetime import datetime
+# from datetime import datetime
+from datetime import datetime, timezone, timedelta # <-- 이 부분을 수정/추가
 import pandas as pd
 import torch
 from omegaconf import OmegaConf
@@ -76,7 +77,15 @@ def inference(cfg):
     
     submissions_dir = "submissions"
     os.makedirs(submissions_dir, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # ▼▼▼▼▼ 타임스탬프 생성 부분을 아래 코드로 교체 ▼▼▼▼▼
+    # KST 시간대 (UTC+9) 정의
+    kst = timezone(timedelta(hours=9))
+    # 현재 시간을 KST 기준으로 생성
+    timestamp = datetime.now(kst).strftime("%Y%m%d_%H%M%S")
+    # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        
     submission_path = os.path.join(submissions_dir, f'submission_{timestamp}.csv')
     
     # 대회 규정에 맞게 index=False로 저장
