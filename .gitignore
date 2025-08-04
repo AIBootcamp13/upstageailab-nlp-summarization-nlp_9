@@ -87,3 +87,7 @@ wandb/
 *.md
 .env
 RULES.md
+
+# processed는 포함시킴!
+!data/processed/
+!data/processed/**
