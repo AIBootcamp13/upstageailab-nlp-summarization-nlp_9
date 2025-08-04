@@ -5,10 +5,10 @@ accelerator: "auto"
 devices: 1
 max_epochs: 20
 log_every_n_steps: 50
-# precision: "bf16-mixed"    
-precision: "16-mixed"
+precision: "bf16-mixed"    
+# precision: "16-mixed"
 gradient_clip_val: 1.0
-accumulate_grad_batches: 2  # ✅ batch size 늘린 효과 (GPU 메모리 아끼면서 효과는 배로)
+accumulate_grad_batches: 4  # ✅ batch size 늘린 효과 (GPU 메모리 아끼면서 효과는 배로)
 
 callbacks:
   - _target_: pytorch_lightning.callbacks.ModelCheckpoint
