@@ -1,0 +1,8 @@
+
+train_path: "./data/processed/train_subset.csv"
+val_path: "./data/processed/val.csv"
+
+
+batch_size: 4
+num_workers: 4
+

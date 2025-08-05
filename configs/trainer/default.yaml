@@ -3,23 +3,23 @@ _target_: pytorch_lightning.Trainer
 
 accelerator: "auto"
 devices: 1
-max_epochs: 20
+max_epochs: 20 # 충분히 훈련하되, EarlyStopping에 맡기도록 20으로 설정
 log_every_n_steps: 50
-precision: "bf16-mixed"    
-# precision: "16-mixed"
+
+precision: "bf16-mixed"
 gradient_clip_val: 1.0
-accumulate_grad_batches: 4  # ✅ batch size 늘린 효과 (GPU 메모리 아끼면서 효과는 배로)
+accumulate_grad_batches: 4
 
 callbacks:
   - _target_: pytorch_lightning.callbacks.ModelCheckpoint
     dirpath: "all_checkpoints/${model.name}"
-    filename: "model-{epoch}-{rougeL:.4f}" # "epoch={epoch}-rougeL={rougeL:.4f}" -> "model-{epoch}-{rougeL:.4f}"
+    filename: "model-{epoch}-{rougeL:.4f}"
     monitor: "rougeL"
     mode: "max"
-    save_top_k: 1
+    save_top_k: 1 # 최고의 모델 1개만 저장
     save_last: true
 
   - _target_: pytorch_lightning.callbacks.EarlyStopping
     monitor: "rougeL"
     mode: "max"
-    patience: 5
+    patience: 5 # 5 에포크 동안 성능 향상이 없으면 자동 중지

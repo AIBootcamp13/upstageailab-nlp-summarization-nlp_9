@@ -1,0 +1,25 @@
+# configs/model/flan-t5-large-final.yaml (업그레이드 버전)
+name: "flan-t5-large-final"
+pretrained_model_name_or_path: "google/flan-t5-large"
+encoder_max_len: 256
+decoder_max_len: 128
+special_tokens: null # 안정성을 위해 비활성화
+generate_max_length: 128
+num_beams: 4
+no_repeat_ngram_size: 2
+
+# === fiery-sweep-9에서 찾은 챔피언 레시피 ===
+learning_rate: 0.00007961741745252724
+weight_decay: 0.01
+label_smoothing: 0.09803928561942396
+warmup_ratio: 0.1
+lr_scheduler: "cosine_with_restarts"
+
+# === LoRA를 명시적으로 설정 ===
+lora_config:
+  r: 64 # 로라가 적용되는 차원 수
+  lora_alpha: 128  # LoRA의 스케일링 계수. 학습률처럼 작동함
+  lora_dropout: 0.1 # 과적합 방지
+  # T5 모델의 모든 Linear 레이어에 LoRA를 적용
+  target_modules: ["q", "v"] # q,v가 가장 일반적
+  # q: query, v: value / 이것의 의미? -> Attention 메커니즘에서 입력 시퀀스의 각 단어가 다른 단어에 얼마나 주의를 기울여야 하는지를 결정하는 데 사용되는 벡터입니다.

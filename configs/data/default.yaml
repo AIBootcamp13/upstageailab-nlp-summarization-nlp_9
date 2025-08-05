@@ -1,11 +1,8 @@
 # configs/data/default.yaml
-
-# 훈련 및 검증 데이터 파일의 경로
+# 100% 전체 훈련 데이터 사용
 train_path: "./data/processed/train.csv"
 val_path: "./data/processed/val.csv"
 
-# 훈련 시 사용할 배치 사이즈
-batch_size: 4 # 메모리 부족(OOM) 에러 방지를 위해 4로 유지!
-
-# 데이터 로딩에 사용할 CPU 워커 수
+# OOM 방지를 위한 안정적인 배치 사이즈
+batch_size: 4
 num_workers: 4

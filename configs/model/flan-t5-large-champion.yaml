@@ -1,0 +1,31 @@
+# configs/model/flan-t5-large-champion.yaml
+name: "flan-t5-large-champion"
+pretrained_model_name_or_path: "google/flan-t5-large"
+
+encoder_max_len: 256
+decoder_max_len: 128
+
+# 안정적인 첫 시도를 위해 special_tokens는 일단 비활성화.
+# 이 실험이 성공하면, 다음 2단계 파인튜닝 때 다시 켜서 성능을 더 끌어올릴 수 있어.
+special_tokens: null
+
+generate_max_length: 128
+num_beams: 4
+no_repeat_ngram_size: 2
+
+
+# 1. 학습률 (Learning Rate)
+# 현재의 안정적인 3e-5보다 2배 높여서 수렴 속도를 높이고,
+# base 모델의 1e-4보다는 낮춰서 안정성을 확보한 최적의 값.
+learning_rate: 6e-5
+
+# 2. 규제 (Regularization)
+# weight_decay와 label_smoothing은 현재 모델에서 안정적으로 잘 작동하고 있으므로,
+# 검증된 값을 그대로 사용하여 안정성을 유지.
+weight_decay: 0.01
+label_smoothing: 0.1
+
+# 3. 스케줄러 (Scheduler)
+# Warmup과 Cosine 스케줄러는 대형 모델 훈련의 정석이므로 그대로 유지.
+warmup_ratio: 0.1
+lr_scheduler: "cosine_with_restarts"

@@ -1,0 +1,24 @@
+# configs/model/flan-t5-large-final.yaml (업그레이드 버전)
+name: "flan-t5-large-final"
+pretrained_model_name_or_path: "google/flan-t5-large"
+encoder_max_len: 256
+decoder_max_len: 128
+special_tokens: null # 안정성을 위해 비활성화
+generate_max_length: 128
+num_beams: 4
+no_repeat_ngram_size: 2
+
+# === fiery-sweep-9에서 찾은 챔피언 레시피 ===
+learning_rate: 0.00007961741745252724
+weight_decay: 0.01
+label_smoothing: 0.09803928561942396
+warmup_ratio: 0.1
+lr_scheduler: "cosine_with_restarts"
+
+# === LoRA를 명시적으로 설정 ===
+lora_config:
+  r: 64
+  lora_alpha: 16 # 원문에서는 16이었지만, 보통 r의 2배인 128을 쓰기도 함. 일단 16으로 시작.
+  lora_dropout: 0.1
+  # T5 모델의 모든 Linear 레이어에 LoRA를 적용
+  target_modules: ["q", "v"] # q,v가 가장 일반적

@@ -1,71 +1,29 @@
-# # sweep.yaml 버전 1
-# command:
-#   - ${env}
-#   - python
-#   - -m
-#   - src.train
-#   - --config-path
-#   - ../configs 
-#   - --config-name
-#   - config.yaml
-#   - ${args_no_hyphens}
-
-# method: bayes
-
-# metric:
-#   name: val_loss
-#   goal: minimize
-
-# parameters:
-#   model.pretrained_model_name_or_path:
-#     values:
-#       - "paust/pko-t5-base"
-#       - "digit82/kobart-summarization"
-#       - "KETI-AIR/ke-t5-base"
-
-#   model.learning_rate:
-#     distribution: log_uniform_values
-#     min: 1.0e-05
-#     max: 1.0e-04
-
-#   model.num_beams:
-#     values: [3, 5]
-
-# sweep.yaml 버전 2
-# 탐색 방법: 베이지안 최적화 (가장 효율적인 방식)
+# sweep.yaml (최종 수정본)
+program: src/train.py
 method: bayes
-
-# 목표: rougeL 점수를 최대화하는 것
 metric:
-  name: "rougeL"
-  goal: "maximize"
+  name: rougeL
+  goal: maximize
 
-# 탐색할 하이퍼파라미터들
 parameters:
-  model.learning_rate:
-    # 1e-5 ~ 3e-4 사이에서 최적의 값을 탐색
-    distribution: log_uniform_values
-    min: 1.0e-05
-    max: 3.0e-04
+  # -- 고정할 파라미터 --
+  model_name:
+    value: "flan-t5-large"
+  data_config_path:
+    value: "configs/data/subset.yaml"
+  max_epochs:
+    value: 4 # 각 실험은 4 에포크만 진행
 
-  model.weight_decay:
-    # 0.0 ~ 0.1 사이에서 최적의 값을 탐색
+  # -- 탐색할 하이퍼파라미터 (숫자 표기법 수정) --
+  learning_rate:
+    distribution: uniform
+    min: 0.00003  # 3e-5
+    max: 0.00008  # 8e-5
+
+  weight_decay:
+    values: [0.0, 0.01, 0.03]
+
+  label_smoothing:
     distribution: uniform
     min: 0.0
     max: 0.1
-
-# 실행할 명령어
-command:
-  - ${env}
-  - python
-  - -m
-  - src.train
-  - --config-path
-  - ../configs
-  - --config-name
-  - config.yaml
-  - model=flan-t5
-  - data=english_v1
-  - trainer.max_epochs=100 # 최대 100 에포크까지 (어차피 조기종료가 잡아줌)
-  # - trainer.callbacks[1].patience=10 # 10 에포크 동안 성능 개선 없으면 조기종료
-  - ${args_no_hyphens}
