@@ -16,7 +16,6 @@ try:
         print(f"\n🔥🔥🔥 'english_summary' 컬럼에서 총 {missing_count}개의 결측치를 발견했습니다.")
         
         print("\n--- 결측치가 포함된 행 샘플 (상위 5개) ---")
-        # 'english_summary' 컬럼이 비어있는 행들만 필터링해서 보여주기
         missing_rows = df[df['english_summary'].isnull()]
         print(missing_rows.head())
 
