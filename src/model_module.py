@@ -96,18 +96,15 @@ class SummaryModelModule(pl.LightningModule): # PyTorch Lightning의 LightningMo
 
         self.validation_step_outputs.clear() # 클리어 하는 이유: 다음 에폭에서 새로운 결과를 저장하기 위해
 
-    # 모델이 예측을 수행할 때 호출됩니다.
+
+    # 동적 길이로 하니까 요약문이 잘리는 현상이 발생함 -> eda 결과 안전한 고정 길이(178)로 변경
+    # predict_step 메소드 전체를 아래 코드로 교체
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
-        # --- '동적 길이 조절' 비법 적용 ---
-        # 현재 배치에서 가장 긴 입력의 길이를 계산
-        max_input_len_in_batch = torch.max(torch.sum(batch['attention_mask'], dim=1)).item()
-        
-        # 입력 길이의 14%를 기준으로 하되, 최소 30, 최대 128로 길이를 제한하는 안전장치 추가
-        dynamic_max_len = max(30, min(128, int(max_input_len_in_batch * 0.14)))
+        # --- 최종 수정: 데이터 기반의 안전한 고정 길이(178) 사용 ---
         
         # 기본 생성 옵션 설정
         gen_kwargs = {
-            "max_length": dynamic_max_len, # <-- 계산된 동적 길이를 적용
+            "max_length": 178, # <-- 데이터 분석으로 찾은 최적의 길이로 고정!
             "num_beams": self.model_cfg.get("num_beams", 4),
             "no_repeat_ngram_size": self.model_cfg.get("no_repeat_ngram_size", 2),
             "length_penalty": self.model_cfg.get("length_penalty", 1.0),
@@ -120,8 +117,9 @@ class SummaryModelModule(pl.LightningModule): # PyTorch Lightning의 LightningMo
         if "generation" in self.hparams and self.hparams.generation:
             override_kwargs = {k: v for k, v in self.hparams.generation.items() if v is not None}
             gen_kwargs.update(override_kwargs)
-
-        print(f"  [Generating] max_length: {gen_kwargs['max_length']}, num_beams: {gen_kwargs['num_beams']}")
+        
+        # 이제 max_length는 고정되었으므로, print문에서 제거해도 됨
+        print(f"  [Generating] num_beams: {gen_kwargs['num_beams']}")
         
         generated_ids = self.model.generate(
             input_ids=batch['input_ids'],

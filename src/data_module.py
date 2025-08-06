@@ -82,7 +82,6 @@ class SummaryDataModule(pl.LightningDataModule):
                 self.predict_dataset = SummaryDataset(tokenized_predict)
 
 
-    # --- 이하 dataloader 함수들은 수정할 필요 없음 ---
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=4, shuffle=True)
 
