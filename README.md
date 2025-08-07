@@ -116,7 +116,7 @@
 
 
 ### Presentation
-- [📄 발표 자료](https://docs.google.com/presentation/d/1FBIfIUDDA-Iw6YShXsmCJV1QxOjLCJNL/edit?slide=id.p7#slide=id.p7)
+- [📄 발표 자료](https://docs.google.com/presentation/d/1FBIfIUDDA-Iw6YShXsmCJV1QxOjLCJNL/edit?slide=id.p7#slide=id.p1)
 
 ### Meeting Log
 - [📝 이슈 관리)](https://trello.com/b/aaaTrVD5/9%EC%A1%B0)
