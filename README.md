@@ -1,36 +1,44 @@
-# Title (Please modify the title)
-## Team
+# Dialogue Summarization | 일상 대화 요약 경진대회
 
-| ![박패캠](https://avatars.githubusercontent.com/u/156163982?v=4) | ![이패캠](https://avatars.githubusercontent.com/u/156163982?v=4) | ![최패캠](https://avatars.githubusercontent.com/u/156163982?v=4) | ![김패캠](https://avatars.githubusercontent.com/u/156163982?v=4) | ![오패캠](https://avatars.githubusercontent.com/u/156163982?v=4) |
-| :--------------------------------------------------------------: | :--------------------------------------------------------------: | :--------------------------------------------------------------: | :--------------------------------------------------------------: | :--------------------------------------------------------------: |
-|            [박패캠](https://github.com/UpstageAILab)             |            [이패캠](https://github.com/UpstageAILab)             |            [최패캠](https://github.com/UpstageAILab)             |            [김패캠](https://github.com/UpstageAILab)             |            [오패캠](https://github.com/UpstageAILab)             |
-|                            팀장, 담당 역할                             |                            담당 역할                             |                            담당 역할                             |                            담당 역할                             |                            담당 역할                             |
+## Team : CV-Team9
+
+| ![박패캠](https://avatars.githubusercontent.com/u/156163982?v=4) | ![이패캠](https://avatars.githubusercontent.com/u/156163982?v=4) | ![최패캠](https://avatars.githubusercontent.com/u/156163982?v=4) | ![김패캠](https://avatars.githubusercontent.com/u/156163982?v=4) |
+| :--------------------------------------------------------------: | :--------------------------------------------------------------: | :--------------------------------------------------------------: | :--------------------------------------------------------------: | 
+|            [홍정민](https://github.com/UpstageAILab)             |            [최지희](https://github.com/UpstageAILab)             |            [이재용](https://github.com/UpstageAILab)             |            [김효석](https://github.com/UpstageAILab)             |
+|                            팀장, 데이터 전처리/모델학습                             |                            데이터 전처리/모델학습                             |                            데이터 전처리/모델학습                             |                            데이터 전처리/모델학습                             |
 
 ## 0. Overview
+
 ### Environment
-- _Write Development environment_
+- OS: Ubuntu 20.04 / CUDA 11.8
+- Python 3.10
+- GPU: Tesla T4 / A100
 
 ### Requirements
-- _Write Requirements_
+- transformers
+- datasets
+- peft
+- bitsandbytes
+- accelerate
+- deep-translator
 
-## 1. Competiton Info
+---
+
+## 1. Competition Info
 
 ### Overview
-
-- _Write competition information_
+- 실제 일상 시나리오 기반 대화를 한 문장으로 요약하는 모델 개발 대회
+- 다양한 언어모델을 적용하여 성능 향상 전략을 실험함
 
 ### Timeline
+- 2025.07.25~ 2025.08.06
 
-- ex) January 10, 2024 - Start Date
-- ex) February 10, 2024 - Final submission deadline
+---
 
 ## 2. Components
 
 ### Directory
 
-- _Insert your directory structure_
-
-e.g.
 ```
 ├── code
 │   ├── jupyter_notebooks
@@ -46,47 +54,70 @@ e.g.
         └── train
 ```
 
-## 3. Data descrption
+---
+
+## 3. Data Description
 
 ### Dataset overview
+- 총 13,455개의 한국어 대화 데이터
+- 구성: `dialogue`, `summary`, `topic`
+- train: 12,457 / validation: 499 / test: 499
 
-- _Explain using data_
+📁 train.csv / dev.csv
+| Column     | 설명                       |
+| ---------- | ------------------------ |
+| `fname`    | 샘플 ID                    |
+| `dialogue` | 다자간 일상 대화 텍스트            |
+| `summary`  | 대화 내용 요약문 (정답)           |
+| `topic`    | 대화 주제 (주제별 성능 분석에 사용 가능) |
+
+
+📁 test.csv
+| Column                    | 설명            |
+| ------------------------- | ------------- |
+| `fname`                   | 샘플 ID         |
+| `dialogue`                | 다자간 일상 대화 텍스트 |
+| `summary` 없음 → 모델이 생성해야 함 |               |
 
 ### EDA
-
-- _Describe your EDA process and step-by-step conclusion_
+- 발화 길이 평균: 약 550자
+- summary는 대부분 1문장
+- topic 다양성 존재 (건강검진, 백신 접종, 잃어버린 물건 등)
 
 ### Data Processing
+- Text Cleansing : 의미 없는 특수 문자, 공백, 이모티콘 제거
+- Back translation 기반 증강 추가
+- Few-shot prompting 형식으로 변환
 
-- _Describe data processing process (e.g. Data Labeling, Data Cleaning..)_
+---
 
 ## 4. Modeling
 
-### Model descrition
+### Model Description
 
-- _Write model information and why your select this model_
+| Model | 설명 |
+|-------|------|
+| KoBART | baseline 모델, 빠르고 안정적 |
+| T5-base | 다양한 요약 스타일 대응 가능 |
+| Qwen3-1.7B | instruction tuning + few-shot 대응력 강함 |
+| SOLAR-10.7B-Instruct | 한국어 instruction LLM 중 최강 성능 |
 
 ### Modeling Process
+- Hugging Face Transformers 기반 fine-tuning
+- LoRA / QLoRA 사용으로 경량 학습 구현
+- SOLAR 모델: few-shot prompting + QLoRA 학습 구조
 
-- _Write model train and test process with capture_
+---
 
 ## 5. Result
 
 ### Leader Board
+<img width="864" height="610" alt="image" src="https://github.com/user-attachments/assets/fe910fe5-b44d-44ca-89b5-db20f5e1dae9" />
 
-- _Insert Leader Board Capture_
-- _Write rank and score_
 
 ### Presentation
-
-- _Insert your presentaion file(pdf) link_
-
-## etc
+- [📄 발표 자료](https://docs.google.com/presentation/d/1FBIfIUDDA-Iw6YShXsmCJV1QxOjLCJNL/edit?slide=id.p7#slide=id.p7)
 
 ### Meeting Log
+- [📝 이슈 관리)](https://trello.com/b/aaaTrVD5/9%EC%A1%B0)
 
-- _Insert your meeting log link like Notion or Google Docs_
-
-### Reference
-
-- _Insert related reference_
