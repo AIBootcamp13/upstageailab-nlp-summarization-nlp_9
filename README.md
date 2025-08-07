@@ -94,6 +94,7 @@
 ## 4. Modeling
 
 ### Model Description
+<img width="521" height="314" alt="스크린샷 2025-08-07 오후 12 18 53" src="https://github.com/user-attachments/assets/0521b878-dbaa-42fa-a8c4-c716b3f8e325" />
 
 | Model | 설명 |
 |-------|------|
@@ -106,6 +107,7 @@
 - Hugging Face Transformers 기반 fine-tuning
 - LoRA / QLoRA 사용으로 경량 학습 구현
 - SOLAR 모델: few-shot prompting + QLoRA 학습 구조
+<img width="635" height="308" alt="스크린샷 2025-08-07 오후 12 19 27" src="https://github.com/user-attachments/assets/07eb0119-4118-4a38-ba8b-d616b612d2eb" />
 
 ---
 
