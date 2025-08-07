@@ -10,7 +10,7 @@
 ## 0. Overview
 
 ### Environment
-- OS: Ubuntu 20.04 / CUDA 11.8
+- OS: Ubuntu / CUDA
 - Python 3.10
 - GPU: Tesla T4 / A100
 
